@@ -518,9 +518,6 @@ static ssize_t set_max_lock_dvfs(struct device *dev, struct device_attribute *at
 {
 	int ret, clock = 0;
 	struct exynos_context *platform = (struct exynos_context *)pkbdev->platform_context;
-	
-	// Kill it from now without interferring Game Launcher
-	return count;
 
 	if (!platform)
 		return -ENODEV;
@@ -583,9 +580,6 @@ static ssize_t set_min_lock_dvfs(struct device *dev, struct device_attribute *at
 {
 	int ret, clock = 0;
 	struct exynos_context *platform = (struct exynos_context *)pkbdev->platform_context;
-	
-	// Kill it from now without interferring Game Launcher
-	return count;
 
 	if (!platform)
 		return -ENODEV;
@@ -1986,6 +1980,11 @@ int gpu_create_sysfs_file(struct device *dev)
 		goto out;
 	}
 
+	if (device_create_file(dev, &dev_attr_volt_table)) {
+		GPU_LOG(DVFS_ERROR, DUMMY, 0u, 0u, "couldn't create sysfs file [volt_table]\n");
+		goto out;
+	}
+
 	if (device_create_file(dev, &dev_attr_dvfs_table)) {
 		GPU_LOG(DVFS_ERROR, DUMMY, 0u, 0u, "couldn't create sysfs file [dvfs_table]\n");
 		goto out;
@@ -2063,6 +2062,31 @@ int gpu_create_sysfs_file(struct device *dev)
 
 	if (device_create_file(dev, &dev_attr_polling_speed)) {
 		GPU_LOG(DVFS_ERROR, DUMMY, 0u, 0u, "couldn't create sysfs file [polling_speed]\n");
+		goto out;
+	}
+
+	if (device_create_file(dev, &dev_attr_throttling1)) {
+		GPU_LOG(DVFS_ERROR, DUMMY, 0u, 0u, "couldn't create sysfs file [throttling1]\n");
+		goto out;
+	}
+
+	if (device_create_file(dev, &dev_attr_throttling2)) {
+		GPU_LOG(DVFS_ERROR, DUMMY, 0u, 0u, "couldn't create sysfs file [throttling2]\n");
+		goto out;
+	}
+
+	if (device_create_file(dev, &dev_attr_throttling3)) {
+		GPU_LOG(DVFS_ERROR, DUMMY, 0u, 0u, "couldn't create sysfs file [throttling3]\n");
+		goto out;
+	}
+
+	if (device_create_file(dev, &dev_attr_throttling4)) {
+		GPU_LOG(DVFS_ERROR, DUMMY, 0u, 0u, "couldn't create sysfs file [throttling4]\n");
+		goto out;
+	}
+
+	if (device_create_file(dev, &dev_attr_tripping)) {
+		GPU_LOG(DVFS_ERROR, DUMMY, 0u, 0u, "couldn't create sysfs file [tripping]\n");
 		goto out;
 	}
 
