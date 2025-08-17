@@ -128,10 +128,10 @@ static struct apll_freq exynos7420_apll_freq_CA57[] = {
  */
 static const unsigned int asv_voltage_7420_CA57[CPUFREQ_LEVEL_END_CA57] = {
 	1250000,	/* L0  2500 */
-	1250000,	/* L1  2400 */
-	1250000,	/* L2  2300 */
-	1250000,	/* L3  2200 */
-	1250000,	/* L4  2100 */
+	1245000,	/* L1  2400 */
+	1237500,	/* L2  2300 */
+	1225000,	/* L3  2200 */
+	1212500,	/* L4  2100 */
 	1200000,	/* L5  2000 */
 	1156250,	/* L6  1900 */
 	1118750,	/* L7  1800 */
@@ -155,9 +155,9 @@ static const unsigned int asv_voltage_7420_CA57[CPUFREQ_LEVEL_END_CA57] = {
 
 /* minimum memory throughput in megabytes per second */
 static int exynos7420_bus_table_CA57[CPUFREQ_LEVEL_END_CA57] = {
-	1552000,		/* 2.5 GHz */
+	1552000,		/* 2.8 GHz */
+	1552000,		/* 2.6 GHz */
 	1552000,		/* 2.4 GHz */
-	1552000,		/* 2.3 GHz */
 	1552000,		/* 2.2 GHz */
 	1552000,		/* 2.1 GHz */
 	1456000,		/* 2.0 GHz */
@@ -351,17 +351,17 @@ static void __init set_volt_table_CA57(void)
 	case 1 :
 	case 4 :
 	case 12 :
-		max_support_idx_CA57 = L7; break;	/* 1.8GHz */
+		max_support_idx_CA57 = L0; break;
 	case 5 :
-		max_support_idx_CA57 = L10; break;	/* 1.5GHz */
+		max_support_idx_CA57 = L0; break;
 	default :
-		max_support_idx_CA57 = L4;		/* 2.1GHz */
+		max_support_idx_CA57 = L0;
 	}
 #else
-	max_support_idx_CA57 = L13;	/* 1.2 GHz */
+	max_support_idx_CA57 = L0;
 #endif
 
-	min_support_idx_CA57 = L17;	/* 800 MHz */
+	min_support_idx_CA57 = L22;
 
 	pr_info("CPUFREQ of CA57 max_freq : L%d %u khz\n", max_support_idx_CA57,
 		exynos7420_freq_table_CA57[max_support_idx_CA57].frequency);

@@ -71,8 +71,8 @@ static struct apll_freq exynos7420_apll_freq_CA53[] = {
 	 * clock divider for APOLLO_PLL, SCLK_HPM_APOLLO, RESERVED
 	 * PLL M, P, S values are NOT used, Instead CCF clk_set_rate is used
 	 */
-	APLL_FREQ(2000, 0, 0, 2, 5, 5, 5, 5, 0, 1, 4, 0,   0, 0, 0),  /* ARM L0: 2.0GHz   */
-	APLL_FREQ(1900, 0, 0, 2, 5, 5, 5, 5, 0, 1, 4, 0,   0, 0, 0),  /* ARM L1: 1.9GMHz  */
+	APLL_FREQ(2000, 0, 0, 2, 5, 5, 5, 5, 0, 1, 4, 0, 162, 2, 0),  /* ARM L0: 2.0GHz   */
+	APLL_FREQ(1900, 0, 0, 2, 5, 5, 5, 5, 0, 1, 4, 0, 158, 2, 0),  /* ARM L1: 1.9GMHz  */
 	APLL_FREQ(1800, 0, 0, 2, 5, 5, 5, 5, 0, 1, 4, 0, 150, 2, 0),  /* ARM L2: 1.8GMHz  */
 	APLL_FREQ(1704, 0, 0, 2, 5, 5, 5, 5, 0, 1, 4, 0, 142, 2, 0),  /* ARM L3: 1.7GHz   */
 	APLL_FREQ(1600, 0, 0, 2, 5, 5, 5, 5, 0, 1, 3, 0, 200, 3, 0),  /* ARM L4: 1.6GHz   */
@@ -96,15 +96,15 @@ static struct apll_freq exynos7420_apll_freq_CA53[] = {
  * ASV group voltage table
  */
 static const unsigned int asv_voltage_7420_CA53[CPUFREQ_LEVEL_END_CA53] = {
-	1168750,	/* L0  2000 */
-	1168750,	/* L1  1900 */
-	1168750,	/* L2  1800 */
-	1168750,	/* L3  1700 */
-	1168750,	/* L4  1600 */
-	1118750,	/* L5  1500 */
-	1068750,	/* L6  1400 */
-	1018750,	/* L7  1300 */
-	 981250,	/* L8  1200 */
+	1162500,	/* L0  2000 */
+	1162500,	/* L1  1900 */
+	1162500,	/* L2  1800 */
+	1150000,	/* L3  1700 */
+	1137500,	/* L4  1600 */
+	1112500,	/* L5  1500 */
+	1062500,	/* L6  1400 */
+	1015000,	/* L7  1300 */
+	 975000,	/* L8  1200 */
 	 943750,	/* L9  1100 */
 	 900000,	/* L10 1000 */
 	 862500,	/* L11  900 */
@@ -271,13 +271,13 @@ static void __init set_volt_table_CA53(void)
 	case 0 :
 	case 1 :
 	case 4 :
-		max_support_idx_CA53 = L6; break;	/* 1.4GHz */
+		max_support_idx_CA53 = L2; break;
 	case 5 :
-		max_support_idx_CA53 = L8; break;	/* 1.2GHz */
+		max_support_idx_CA53 = L2; break;
 	case 12 :
-		max_support_idx_CA53 = L7; break;	/* 1.3GHz */
+		max_support_idx_CA53 = L2; break;
 	default :
-		max_support_idx_CA53 = L5;	/* 1.5GHz */
+		max_support_idx_CA53 = L2;
 	}
 
 	min_support_idx_CA53 = L16;	/* 400MHz */
