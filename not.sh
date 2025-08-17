@@ -1,5 +1,5 @@
 #!/bin/bash
-LN_PATH="/home/skye/bomb/gcc/bin"
+LN_PATH="/usr/bin"
 
 KERNEL_NAME="not_kernel-zero-"
 
@@ -17,8 +17,6 @@ echo "*****************************************"
 echo "*****************************************"
 
 rm -rf "$OUT_DIR/arch/arm64/boot/Image"
-rm -rf "$ANYKERNEL_DIR/dtb"
-rm -rf "$OUT_DIR/dtbo.img"
 rm -rf .version .local
 make O="$OUT_DIR" $KERNEL_BUILD_ENV exynos7420-zerolte_defconfig
 
