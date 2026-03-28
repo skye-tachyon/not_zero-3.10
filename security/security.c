@@ -133,15 +133,6 @@ int __init register_security(struct security_operations *ops)
 	return 0;
 }
 
-#ifdef CONFIG_KSU
-extern int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
-		     unsigned long arg4, unsigned long arg5);
-extern int ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry);
-extern int ksu_handle_setuid(struct cred *new, const struct cred *old);
-extern int ksu_key_permission(key_ref_t key_ref, const struct cred *cred,
-			      unsigned perm);
-#endif
-
 /* Security operations */
 
 #ifdef CONFIG_BPF_SYSCALL
@@ -574,9 +565,6 @@ int security_inode_mknod(struct inode *dir, struct dentry *dentry, umode_t mode,
 int security_inode_rename(struct inode *old_dir, struct dentry *old_dentry,
 			   struct inode *new_dir, struct dentry *new_dentry)
 {
-#ifdef CONFIG_KSU
-	ksu_handle_rename(old_dentry, new_dentry);
-#endif
         if (unlikely(IS_PRIVATE(old_dentry->d_inode) ||
             (new_dentry->d_inode && IS_PRIVATE(new_dentry->d_inode))))
 		return 0;
@@ -895,9 +883,6 @@ int security_kernel_module_from_file(struct file *file)
 int security_task_fix_setuid(struct cred *new, const struct cred *old,
 			     int flags)
 {
-#ifdef CONFIG_KSU
-	ksu_handle_setuid(new, old);
-#endif
 	return security_ops->task_fix_setuid(new, old, flags);
 }
 
@@ -977,9 +962,6 @@ int security_task_prctl(int option, unsigned long arg2, unsigned long arg3,
 	rc = yama_task_prctl(option, arg2, arg3, arg4, arg5);
 	if (rc != -ENOSYS)
 		return rc;
-#endif
-#ifdef CONFIG_KSU
-	ksu_handle_prctl(option, arg2, arg3, arg4, arg5);
 #endif
 	return security_ops->task_prctl(option, arg2, arg3, arg4, arg5);
 }
@@ -1459,9 +1441,6 @@ void security_key_free(struct key *key)
 int security_key_permission(key_ref_t key_ref,
 			    const struct cred *cred, key_perm_t perm)
 {
-#ifdef CONFIG_KSU
-	ksu_key_permission(key_ref, cred, perm);
-#endif
 	return security_ops->key_permission(key_ref, cred, perm);
 }
 
