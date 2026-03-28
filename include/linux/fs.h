@@ -1564,18 +1564,20 @@ extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
 extern int vfs_link2(struct vfsmount *, struct dentry *, struct inode *, struct dentry *);
 extern int vfs_rmdir(struct inode *, struct dentry *);
 extern int vfs_rmdir2(struct vfsmount *, struct inode *, struct dentry *);
-<<<<<<< HEAD
+#if 1
 extern int vfs_unlink(struct inode *, struct dentry *);
 extern int vfs_unlink2(struct vfsmount *, struct inode *, struct dentry *);
 extern int vfs_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
 extern int vfs_rename2(struct vfsmount *, struct inode *, struct dentry *, struct inode *, struct dentry *);
-=======
+extern int vfs_whiteout(struct inode *, struct dentry *);
+#endif
+#if 0
 extern int vfs_unlink(struct inode *, struct dentry *, struct inode **);
 extern int vfs_unlink2(struct vfsmount *, struct inode *, struct dentry *, struct inode **);
 extern int vfs_rename(struct inode *, struct dentry *, struct inode *, struct dentry *, struct inode **, unsigned int);
 extern int vfs_rename2(struct vfsmount *, struct inode *, struct dentry *, struct inode *, struct dentry *, struct inode **, unsigned int);
 extern int vfs_whiteout(struct inode *, struct dentry *);
->>>>>>> 8eb17440 (vfs: add whiteout support)
+#endif
 
 /*
  * VFS dentry helper functions.
