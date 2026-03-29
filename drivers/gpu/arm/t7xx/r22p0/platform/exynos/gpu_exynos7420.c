@@ -50,13 +50,13 @@ void __iomem *g3d1_outstanding_regs;
 
 /*  clk,vol,abb,min,max,down stay, pm_qos mem, pm_qos int, pm_qos cpu_kfc_min, pm_qos cpu_egl_max */
 static gpu_dvfs_info gpu_dvfs_table_default[] = {
-	{850, 900000, 0, 98, 100, 1, 0, 1552000, 400000, 1500000, 1300000},
-	{700, 810000, 0, 98,  99, 1, 0, 1552000, 400000, 1500000, 1300000},
-	{600, 760000, 0, 78,  85, 1, 0, 1552000, 413000, 1500000, 1300000},
-	{544, 700000, 0, 78,  85, 1, 0, 1026000, 413000, 1500000, 1800000},
-	{420, 650000, 0, 78,  85, 1, 0, 1026000, 267000,  900000, 1800000},
-	{350, 570000, 0, 78,  85, 1, 0,  543000, 200000,       0, CPU_MAX},
-	{266, 550000, 0, 78,  85, 1, 0,  416000, 160000,       0, CPU_MAX},
+	{772, 900000, 0, 98, 100, 1, 0, 1552000, 400000, 1500000, 1300000},
+	{700, 900000, 0, 98,  99, 1, 0, 1552000, 400000, 1500000, 1300000},
+	{600, 900000, 0, 78,  85, 1, 0, 1552000, 400000, 1500000, 1300000},
+	{544, 900000, 0, 78,  85, 1, 0, 1026000, 400000, 1500000, 1800000},
+	{420, 900000, 0, 78,  85, 1, 0, 1026000, 267000,  900000, 1800000},
+	{350, 900000, 0, 78,  85, 1, 0,  543000, 200000,       0, CPU_MAX},
+	{266, 900000, 0, 78,  85, 1, 0,  416000, 160000,       0, CPU_MAX},
 };
 
 static int mif_min_table[] = {
@@ -68,21 +68,21 @@ static int mif_min_table[] = {
 };
 
 static int hpm_freq_table[] = {
-	/* 850, 700, 600, 544, 420, 350, 266 */
+	/* 772, 700, 600, 544, 420, 350, 266 */
 	3, 3, 3, 3, 2, 2, 2,
 };
 
 static gpu_attribute gpu_config_attributes[] = {
-	{GPU_MAX_CLOCK, 850},
-	{GPU_MAX_CLOCK_LIMIT, 850},
+	{GPU_MAX_CLOCK, 772},
+	{GPU_MAX_CLOCK_LIMIT, 700},
 	{GPU_MIN_CLOCK, 266},
 	{GPU_DVFS_START_CLOCK, 266},
 	{GPU_DVFS_BL_CONFIG_CLOCK, 266},
 	{GPU_GOVERNOR_TYPE, G3D_DVFS_GOVERNOR_INTERACTIVE},
-	{GPU_GOVERNOR_START_CLOCK_DEFAULT, 350},
-	{GPU_GOVERNOR_START_CLOCK_INTERACTIVE, 350},
-	{GPU_GOVERNOR_START_CLOCK_STATIC, 350},
-	{GPU_GOVERNOR_START_CLOCK_BOOSTER, 350},
+	{GPU_GOVERNOR_START_CLOCK_DEFAULT, 266},
+	{GPU_GOVERNOR_START_CLOCK_INTERACTIVE, 266},
+	{GPU_GOVERNOR_START_CLOCK_STATIC, 266},
+	{GPU_GOVERNOR_START_CLOCK_BOOSTER, 266},
 	{GPU_GOVERNOR_TABLE_DEFAULT, (uintptr_t)&gpu_dvfs_table_default},
 	{GPU_GOVERNOR_TABLE_INTERACTIVE, (uintptr_t)&gpu_dvfs_table_default},
 	{GPU_GOVERNOR_TABLE_STATIC, (uintptr_t)&gpu_dvfs_table_default},
@@ -91,19 +91,19 @@ static gpu_attribute gpu_config_attributes[] = {
 	{GPU_GOVERNOR_TABLE_SIZE_INTERACTIVE, GPU_DVFS_TABLE_LIST_SIZE(gpu_dvfs_table_default)},
 	{GPU_GOVERNOR_TABLE_SIZE_STATIC, GPU_DVFS_TABLE_LIST_SIZE(gpu_dvfs_table_default)},
 	{GPU_GOVERNOR_TABLE_SIZE_BOOSTER, GPU_DVFS_TABLE_LIST_SIZE(gpu_dvfs_table_default)},
-	{GPU_GOVERNOR_INTERACTIVE_HIGHSPEED_CLOCK, 544},
-	{GPU_GOVERNOR_INTERACTIVE_HIGHSPEED_LOAD, 70},
+	{GPU_GOVERNOR_INTERACTIVE_HIGHSPEED_CLOCK, 420},
+	{GPU_GOVERNOR_INTERACTIVE_HIGHSPEED_LOAD, 95},
 	{GPU_GOVERNOR_INTERACTIVE_HIGHSPEED_DELAY, 0},
 	{GPU_DEFAULT_VOLTAGE, 900000},
 	{GPU_COLD_MINIMUM_VOL, 0},
 	{GPU_VOLTAGE_OFFSET_MARGIN, 37500},
 	{GPU_TMU_CONTROL, 1},
 	{GPU_TEMP_THROTTLING1, 544},
-	{GPU_TEMP_THROTTLING2, 420},
-	{GPU_TEMP_THROTTLING3, 350},
+	{GPU_TEMP_THROTTLING2, 350},
+	{GPU_TEMP_THROTTLING3, 266},
 	{GPU_TEMP_THROTTLING4, 266},
 	{GPU_TEMP_TRIPPING, 266},
-	{GPU_POWER_COEFF, 900}, /* all core on param */
+	{GPU_POWER_COEFF, 443}, /* all core on param */
 	{GPU_DVFS_TIME_INTERVAL, 5},
 	{GPU_DEFAULT_WAKEUP_LOCK, 1},
 	{GPU_BUS_DEVFREQ, 1},
@@ -155,13 +155,6 @@ int gpu_dvfs_decide_max_clock(struct exynos_context *platform)
 
 	return 0;
 }
-
-#ifdef CONFIG_MALI_DVFS_USER
-unsigned int gpu_get_config_attr_size(void)
-{
-	return sizeof(gpu_config_attributes);
-}
-#endif
 
 void *gpu_get_config_attributes(void)
 {
