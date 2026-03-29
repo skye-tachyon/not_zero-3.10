@@ -342,6 +342,7 @@ int sysfs_chown_file(struct kobject *kobj, const struct attribute *attr,
 {
 	struct kernfs_node *kn;
 	struct iattr newattrs;
+	const void *ns;
 	int rc;
 
 	kn = kernfs_find_and_get(kobj->sd, attr->name);
