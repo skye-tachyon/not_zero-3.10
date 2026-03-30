@@ -9,8 +9,8 @@ KERNEL_BUILD_ENV="ARCH=arm64 \
                   CROSS_COMPILE="$LN_PATH/aarch64-linux-gnu-" \
                   PATH=$LN_PATH:$PATH"
 
-IMAGE="/home/skye/bomb/out/arch/arm64/boot/Image"
-OUT_DIR="/home/skye/bomb/out"
+IMAGE="/home/skye/bomb/out2/arch/arm64/boot/Image"
+OUT_DIR="/home/skye/bomb/out2"
 ANYKERNEL_DIR="/home/skye/bomb/AnyKernel3/zero"
 
 echo "*****************************************"
