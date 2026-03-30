@@ -96,27 +96,26 @@ static struct apll_freq exynos7420_apll_freq_CA53[] = {
  * ASV group voltage table
  */
 static const unsigned int asv_voltage_7420_CA53[CPUFREQ_LEVEL_END_CA53] = {
-	1162500,	/* L0  2000 */
-	1162500,	/* L1  1900 */
-	1162500,	/* L2  1800 */
-	1150000,	/* L3  1700 */
-	1137500,	/* L4  1600 */
-	1112500,	/* L5  1500 */
-	1062500,	/* L6  1400 */
-	1015000,	/* L7  1300 */
-	 975000,	/* L8  1200 */
-	 943750,	/* L9  1100 */
-	 900000,	/* L10 1000 */
-	 862500,	/* L11  900 */
-	 825000,	/* L12  800 */
-	 787500,	/* L13  700 */
-	 750000,	/* L14  600 */
-	 712500,	/* L15  500 */
-	 675000,	/* L16  400 */
-	 650000,	/* L17  300 */
-	 625000,	/* L18  200 */
+    1112500,   /* L0  2000 */
+    1112500,   /* L1  1900 */
+    1112500,   /* L2  1800 */
+    1100000,   /* L3  1700 */
+    1087500,   /* L4  1600 */
+    1067500,   /* L5  1500 */
+    1012500,   /* L6  1400 */
+     965000,   /* L7  1300 */
+     925000,   /* L8  1200 */
+     893750,   /* L9  1100 */
+     850000,   /* L10 1000 */
+     812500,   /* L11  900 */
+     775000,   /* L12  800 */
+     737500,   /* L13  700 */
+     700000,   /* L14  600 */
+     662500,   /* L15  500 */
+     625000,   /* L16  400 */
+     600000,   /* L17  300 */
+     575000,   /* L18  200 */
 };
-
 /* Minimum memory throughput in megabytes per second */
 static int exynos7420_bus_table_CA53[CPUFREQ_LEVEL_END_CA53] = {
 	1026000,		/* 2.0 GHz */
@@ -271,16 +270,16 @@ static void __init set_volt_table_CA53(void)
 	case 0 :
 	case 1 :
 	case 4 :
-		max_support_idx_CA53 = L2; break;
+		max_support_idx_CA53 = L0; break;
 	case 5 :
-		max_support_idx_CA53 = L2; break;
+		max_support_idx_CA53 = L0; break;
 	case 12 :
-		max_support_idx_CA53 = L2; break;
+		max_support_idx_CA53 = L0; break;
 	default :
-		max_support_idx_CA53 = L2;
+		max_support_idx_CA53 = L0;
 	}
 
-	min_support_idx_CA53 = L16;	/* 400MHz */
+	min_support_idx_CA53 = L18;	/* 200MHz */
 	pr_info("CPUFREQ of CA53 max_freq : L%d %u khz\n", max_support_idx_CA53,
 		exynos7420_freq_table_CA53[max_support_idx_CA53].frequency);
 	pr_info("CPUFREQ of CA53 min_freq : L%d %u khz\n", min_support_idx_CA53,
