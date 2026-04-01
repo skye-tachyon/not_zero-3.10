@@ -5,6 +5,7 @@
 #include "include/uapi/feature.h"
 #include "include/uapi/selinux.h"
 #include "include/uapi/supercall.h"
+#include "include/uapi/sulog.h"
 
 // includes
 #include "include/klog.h"
@@ -24,9 +25,13 @@
 #include "supercall/supercall.h"
 #include "infra/su_mount_ns.h"
 #include "infra/file_wrapper.h"
+#include "infra/event_queue.h"
 #include "feature/kernel_umount.h"
 #include "feature/sucompat.h"
+#include "feature/sulog.h"
 #include "runtime/ksud.h"
+#include "sulog/event.h"
+#include "sulog/fd.h"
 
 #include "selinux/selinux.h"
 #include "selinux/sepolicy.h"
@@ -55,10 +60,15 @@
 
 #include "infra/su_mount_ns.c"
 #include "infra/file_wrapper.c"
+#include "infra/event_queue.c"
 
 #include "feature/kernel_umount.c"
 #include "feature/sucompat.c"
+#include "feature/sulog.c"
 #include "runtime/ksud.c"
+
+#include "sulog/event.c"
+#include "sulog/fd.c"
 
 #include "hook/core_hook.c"	// lsm
 
@@ -92,13 +102,13 @@ extern void ksu_supercalls_init();
 // track backports and other quirks here
 // ref: kernel_compat.c, Makefile
 // yes looks nasty
-#if defined(CONFIG_KSU_KPROBES_KSUD)
-	#define FEAT_1 " +kp_ksud"
+#if defined(CONFIG_KSU_DEBUG)
+	#define FEAT_1 " +debug"
 #else
 	#define FEAT_1 ""
 #endif
-#if defined(CONFIG_KSU_KRETPROBES_SUCOMPAT)
-	#define FEAT_2 " +rp_sucompat"
+#if defined(CONFIG_KSU_KPROBES_KSUD)
+	#define FEAT_2 " +kp_ksud"
 #else
 	#define FEAT_2 ""
 #endif
@@ -151,6 +161,8 @@ int __init kernelsu_init(void)
 	ksu_sucompat_init(); // so the feature is registered
 
 	ksu_kernel_umount_init(); // so the feature is registered
+	
+	ksu_sulog_init(); // so the feature is registered
 
 	ksu_core_init();
 
