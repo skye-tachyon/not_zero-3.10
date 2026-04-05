@@ -150,8 +150,9 @@ static noinline int ksu_sucompat_user_common(const char __user **filename_user,
 	if (!escalate)
 		goto no_escalate;
 
+#ifdef CONFIG_KSU_FEATURE_SULOG
 	ksu_sulog_emit(KSU_SULOG_EVENT_SUCOMPAT, NULL, NULL, GFP_KERNEL);
-
+#endif
 	if (!!escape_with_root_profile())
 		return 0;
 
@@ -193,12 +194,15 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 }
 
 // sys_execve, compat_sys_execve
-int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
-			       void *__never_use_argv, void *__never_use_envp,
-			       int *__never_use_flags)
+static int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
+				void *argv, void *envp, int *flags)
 {
 	if (unlikely(!ksu_boot_completed))
 		sys_execve_escape_ksud(filename_user);
+
+#ifdef CONFIG_KSU_FEATURE_ADBROOT
+	ksu_adb_root_handle_execve(filename_user, (void ***)envp);
+#endif
 
 	if (!is_su_allowed((const void **)filename_user))
 		return 0;
@@ -217,8 +221,9 @@ static noinline int ksu_sucompat_kernel_common(void *filename_ptr, const char *f
 	if (!escalate)
 		goto no_escalate;
 
+#ifdef CONFIG_KSU_FEATURE_SULOG
 	ksu_sulog_emit(KSU_SULOG_EVENT_SUCOMPAT, NULL, NULL, GFP_KERNEL);
-
+#endif
 	if (!!escape_with_root_profile())
 		return 0;
 
@@ -243,45 +248,35 @@ no_escalate:
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
 // for do_execveat_common / do_execve_common on >= 3.14
 // take note: struct filename **filename
-int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
-				 void *__never_use_argv, void *__never_use_envp,
-				 int *__never_use_flags)
+int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv, void *envp, int *flags)
 {
 	if (unlikely(!ksu_boot_completed))
 		kernel_execve_escape_ksud((void *)(*filename_ptr)->name);
 
+#ifdef CONFIG_KSU_FEATURE_ADBROOT
+	ksu_adb_root_handle_execveat((void *)(*filename_ptr)->name, envp);
+#endif
 	if (!is_su_allowed((const void **)filename_ptr))
 		return 0;
-
-	// struct filename *filename = *filename_ptr;
-	// return ksu_do_execveat_common((void *)filename->name, "do_execveat_common");
-	// nvm this, just inline
 
 	return ksu_sucompat_kernel_common((void *)(*filename_ptr)->name, "do_execveat_common", true, 'x');
 }
-
-// for compatibility to old hooks
-int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
-			void *envp, int *flags)
+int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr, void *argv, void *envp, int *flags)
 {
-	if (unlikely(!ksu_boot_completed))
-		kernel_execve_escape_ksud((void *)(*filename_ptr)->name);
-
-	if (!is_su_allowed((const void **)filename_ptr))
-		return 0;
-
-	return ksu_sucompat_kernel_common((void *)(*filename_ptr)->name, "do_execveat_common", true, 'x');
+	// literally just an alias due to old hooks
+	return ksu_handle_execveat(fd, filename_ptr, argv, envp, flags);
 }
 #else
 // for do_execve_common on < 3.14
 // take note: char **filename
-int ksu_legacy_execve_sucompat(const char **filename_ptr,
-				 void *__never_use_argv,
-				 void *__never_use_envp)
+int ksu_legacy_execve_sucompat(const char **filename_ptr, void *argv, void *envp)
 {
 	if (unlikely(!ksu_boot_completed))
 		kernel_execve_escape_ksud((void *)*filename_ptr);
 
+#ifdef CONFIG_KSU_FEATURE_ADBROOT
+	ksu_adb_root_handle_execveat((void *)*filename_ptr, envp);
+#endif
 	if (!is_su_allowed((const void **)filename_ptr))
 		return 0;
 

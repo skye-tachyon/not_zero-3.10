@@ -3,6 +3,68 @@
 #else
 #define LSM_HANDLER_TYPE int
 #endif
+#ifdef CONFIG_KSU_SUSFS
+#include <linux/susfs_def.h>
+#endif // #ifdef CONFIG_KSU_SUSFS
+
+#ifdef CONFIG_KSU_SUSFS
+static inline bool is_zygote_isolated_service_uid(uid_t uid)
+{
+    uid %= 100000;
+    return (uid >= 99000 && uid < 100000);
+}
+
+static inline bool is_zygote_normal_app_uid(uid_t uid)
+{
+    uid %= 100000;
+    return (uid >= 10000 && uid < 19999);
+}
+
+extern u32 susfs_zygote_sid;
+extern struct cred *ksu_cred;
+
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+extern void susfs_run_sus_path_loop(void);
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_PATH
+
+struct susfs_handle_setuid_tw {
+    struct callback_head cb;
+};
+
+static void susfs_handle_setuid_tw_func(struct callback_head *cb)
+{
+    struct susfs_handle_setuid_tw *tw = container_of(cb, struct susfs_handle_setuid_tw, cb);
+    const struct cred *saved = override_creds(ksu_cred);
+
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+    susfs_run_sus_path_loop();
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_PATH
+
+    revert_creds(saved);
+    kfree(tw);
+}
+
+static void ksu_handle_extra_susfs_work(void)
+{
+    struct susfs_handle_setuid_tw *tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
+
+    if (!tw) {
+        pr_err("susfs: No enough memory\n");
+        return;
+    }
+
+    tw->cb.func = susfs_handle_setuid_tw_func;
+
+    int err = task_work_add(current, &tw->cb, TWA_RESUME);
+    if (err) {
+        kfree(tw);
+        pr_err("susfs: Failed adding task_work 'susfs_handle_setuid_tw', err: %d\n", err);
+    }
+}
+#ifdef CONFIG_KSU_SUSFS_TRY_UMOUNT
+extern void susfs_try_umount(uid_t uid);
+#endif // #ifdef CONFIG_KSU_SUSFS_TRY_UMOUNT
+#endif // #ifdef CONFIG_KSU_SUSFS
 
 LSM_HANDLER_TYPE ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry)
 {
@@ -57,6 +119,13 @@ LSM_HANDLER_TYPE ksu_handle_setuid(struct cred *new, const struct cred *old)
 	if (0 != old_uid)
 		return 0;
 
+#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+    // Check if spawned process is isolated service first, and force to do umount if so  
+    if (is_zygote_isolated_service_uid(new_uid)) {
+        goto do_umount;
+    }
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+
 	// we dont have those new fancy things upstream has
 	// lets just do original thing where we disable seccomp
 	if (likely(ksu_is_manager_appid_valid()) && unlikely(ksu_get_manager_appid() == new_uid % PER_USER_RANGE)) {
@@ -70,13 +139,33 @@ LSM_HANDLER_TYPE ksu_handle_setuid(struct cred *new, const struct cred *old)
 		return 0;
 	}
 
-	return ksu_handle_umount(new, old);
+do_umount:
+    // Handle kernel umount
+#ifndef CONFIG_KSU_SUSFS_TRY_UMOUNT
+    return ksu_handle_umount(new, old);
+#else
+    susfs_try_umount(new_uid);
+#endif // #ifndef CONFIG_KSU_SUSFS_TRY_UMOUNT
+
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+    //susfs_run_sus_path_loop(new_uid);
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_PATH
+
+#ifdef CONFIG_KSU_SUSFS
+    ksu_handle_extra_susfs_work();
+
+    susfs_set_current_proc_umounted();
+
+    return 0;
+#endif // #ifdef CONFIG_KSU_SUSFS
 }
 
 LSM_HANDLER_TYPE ksu_bprm_check(struct linux_binprm *bprm)
 {
+#ifdef CONFIG_KSU_FEATURE_SULOG
 	if (unlikely(!current->seccomp.mode))
 		ksu_sulog_emit_bprm((const char *)bprm->filename);
+#endif
 
 	if (likely(!ksu_execveat_hook))
 		return 0;
@@ -116,7 +205,9 @@ static struct security_hook_list ksu_hooks[] = {
 	LSM_HOOK_INIT(inode_rename, ksu_inode_rename),
 	LSM_HOOK_INIT(task_fix_setuid, ksu_task_fix_setuid),
 	LSM_HOOK_INIT(bprm_check_security, ksu_bprm_check),
+#if !defined(CONFIG_KSU_TAMPER_SYSCALL_TABLE) && !defined(CONFIG_KSU_KPROBES_KSUD)
 	LSM_HOOK_INIT(file_permission, ksu_file_permission),
+#endif
 };
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
@@ -186,7 +277,7 @@ static void ksu_lsm_hook_restore(void)
 	preempt_disable();
 	local_irq_disable();
 
-#if 0 // we need this now for sulog
+#ifndef CONFIG_KSU_FEATURE_SULOG
 	if (orig_bprm_check_security) {
 		pr_info("%s: restoring: 0x%lx to 0x%lx\n", __func__, (long)ops->bprm_check_security, (long)orig_bprm_check_security);
 		ops->bprm_check_security = orig_bprm_check_security;
@@ -251,8 +342,10 @@ static void ksu_lsm_hook_init(void)
 	orig_bprm_check_security = ops->bprm_check_security;
 	ops->bprm_check_security = hook_bprm_check_security;
 
+#if !defined(CONFIG_KSU_TAMPER_SYSCALL_TABLE) && !defined(CONFIG_KSU_KPROBES_KSUD)
 	orig_file_permission = ops->file_permission;
 	ops->file_permission = hook_file_permission;
+#endif
 
 	smp_mb();
 

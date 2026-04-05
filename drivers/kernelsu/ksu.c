@@ -26,6 +26,7 @@
 #include "infra/su_mount_ns.h"
 #include "infra/file_wrapper.h"
 #include "infra/event_queue.h"
+#include "feature/adb_root.h"
 #include "feature/kernel_umount.h"
 #include "feature/sucompat.h"
 #include "feature/sulog.h"
@@ -62,6 +63,7 @@
 #include "infra/file_wrapper.c"
 #include "infra/event_queue.c"
 
+#include "feature/adb_root.c"
 #include "feature/kernel_umount.c"
 #include "feature/sucompat.c"
 #include "feature/sulog.c"
@@ -84,13 +86,17 @@
 #endif
 #endif
 
-#ifdef CONFIG_KSU_KPROBES_KSUD
+#if defined(CONFIG_KSU_KPROBES_KSUD) && !defined(CONFIG_KSU_TAMPER_SYSCALL_TABLE)
 #include "hook/kp_ksud.c"
 #endif
 
 #ifdef CONFIG_KSU_EXTRAS
 #include "extras.c"
 #endif
+
+#ifdef CONFIG_KSU_SUSFS
+#include <linux/susfs.h>
+#endif // #ifdef CONFIG_KSU_SUSFS
 
 // __weak fn's
 #include "kernel_compat.c"
@@ -107,7 +113,7 @@ extern void ksu_supercalls_init();
 #else
 	#define FEAT_1 ""
 #endif
-#if defined(CONFIG_KSU_KPROBES_KSUD)
+#if defined(CONFIG_KSU_KPROBES_KSUD) && !defined(CONFIG_KSU_TAMPER_SYSCALL_TABLE)
 	#define FEAT_2 " +kp_ksud"
 #else
 	#define FEAT_2 ""
@@ -161,14 +167,24 @@ int __init kernelsu_init(void)
 	ksu_sucompat_init(); // so the feature is registered
 
 	ksu_kernel_umount_init(); // so the feature is registered
-	
+
+#ifdef CONFIG_KSU_FEATURE_SULOG	
 	ksu_sulog_init(); // so the feature is registered
+#endif
+
+#ifdef CONFIG_KSU_FEATURE_ADBROOT
+	ksu_adb_root_init(); // so the feature is registered
+#endif
 
 	ksu_core_init();
 
 	ksu_allowlist_init();
 
 	ksu_throne_tracker_init();
+
+#ifdef CONFIG_KSU_SUSFS
+    	susfs_init();
+#endif // #ifdef CONFIG_KSU_SUSFS
 
 	ksu_ksud_init();
 
@@ -178,7 +194,7 @@ int __init kernelsu_init(void)
 	ksu_syscall_table_hook_init();
 #endif
 
-#ifdef CONFIG_KSU_KPROBES_KSUD
+#if defined(CONFIG_KSU_KPROBES_KSUD) && !defined(CONFIG_KSU_TAMPER_SYSCALL_TABLE)
 	kp_ksud_init();
 #endif
 
