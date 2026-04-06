@@ -351,17 +351,17 @@ static void __init set_volt_table_CA57(void)
 	case 1 :
 	case 4 :
 	case 12 :
-		max_support_idx_CA57 = L0; break;
+		max_support_idx_CA57 = L2; break;
 	case 5 :
-		max_support_idx_CA57 = L0; break;
+		max_support_idx_CA57 = L2; break;
 	default :
-		max_support_idx_CA57 = L0;
+		max_support_idx_CA57 = L2;
 	}
 #else
-	max_support_idx_CA57 = L0;
+	max_support_idx_CA57 = L2;
 #endif
 
-	min_support_idx_CA57 = L23;
+	min_support_idx_CA57 = L20;
 
 	pr_info("CPUFREQ of CA57 max_freq : L%d %u khz\n", max_support_idx_CA57,
 		exynos7420_freq_table_CA57[max_support_idx_CA57].frequency);
